@@ -88,33 +88,23 @@ export default function TuneList() {
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
         <Typography variant="h4">My Tunes</Typography>
-        <Box>
-          <Button
-            variant="outlined"
-            startIcon={<DownloadIcon />}
-            onClick={handleExportTunebook}
-            sx={{ mr: 2 }}
-          >
-            Export Tunebook
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => {
-              setNewTune({
-                title: '',
-                type: 'reel',
-                key: 'D',
-                abc: '',
-                difficulty: 3,
-                tags: [],
-              });
-              setOpenDialog(true);
-            }}
-          >
-            Add Tune
-          </Button>
-        </Box>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => {
+            setNewTune({
+              title: '',
+              type: 'reel',
+              key: 'D',
+              abc: '',
+              difficulty: 3,
+              tags: [],
+            });
+            setOpenDialog(true);
+          }}
+        >
+          Add Tune
+        </Button>
       </Box>
 
       <Grid container spacing={3}>

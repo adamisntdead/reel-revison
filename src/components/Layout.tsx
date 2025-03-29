@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   AppBar,
   Box,
+  Button,
   CssBaseline,
   Drawer,
   IconButton,
@@ -12,14 +13,17 @@ import {
   ListItemText,
   Toolbar,
   Typography,
+  Divider,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
-  MusicNote as MusicNoteIcon,
   PlayArrow as PlayArrowIcon,
   LibraryMusic as LibraryMusicIcon,
+  Download as DownloadIcon,
 } from '@mui/icons-material';
 import { useState } from 'react';
+import { getTunes } from '@/utils/storage';
+import { exportTunebook } from '@/utils/abcUtils';
 
 const drawerWidth = 240;
 
@@ -33,6 +37,20 @@ export default function Layout({ children }: LayoutProps) {
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
+  };
+
+  const handleExportTunebook = () => {
+    const tunes = getTunes();
+    const abcContent = exportTunebook(tunes);
+    const blob = new Blob([abcContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'my-tunebook.abc';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const menuItems = [
@@ -58,6 +76,17 @@ export default function Layout({ children }: LayoutProps) {
           </ListItem>
         ))}
       </List>
+      <Divider sx={{ mt: 2, mb: 2 }} />
+      <Box sx={{ px: 2 }}>
+        <Button
+          variant="outlined"
+          startIcon={<DownloadIcon />}
+          onClick={handleExportTunebook}
+          fullWidth
+        >
+          Export Tunebook
+        </Button>
+      </Box>
     </div>
   );
 
@@ -69,6 +98,7 @@ export default function Layout({ children }: LayoutProps) {
         sx={{
           width: { sm: `calc(100% - ${drawerWidth}px)` },
           ml: { sm: `${drawerWidth}px` },
+          bgcolor: '#2e7d32', // Match the green theme
         }}
       >
         <Toolbar>
@@ -102,6 +132,7 @@ export default function Layout({ children }: LayoutProps) {
             '& .MuiDrawer-paper': {
               boxSizing: 'border-box',
               width: drawerWidth,
+              bgcolor: '#f5f5f5',
             },
           }}
         >
@@ -114,6 +145,8 @@ export default function Layout({ children }: LayoutProps) {
             '& .MuiDrawer-paper': {
               boxSizing: 'border-box',
               width: drawerWidth,
+              bgcolor: '#f5f5f5',
+              borderRight: '1px solid rgba(0, 0, 0, 0.12)',
             },
           }}
           open
@@ -127,6 +160,8 @@ export default function Layout({ children }: LayoutProps) {
           flexGrow: 1,
           p: 3,
           width: { sm: `calc(100% - ${drawerWidth}px)` },
+          minHeight: '100vh',
+          bgcolor: '#ffffff',
         }}
       >
         <Toolbar />

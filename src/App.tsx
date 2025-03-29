@@ -1,10 +1,15 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
+import { Suspense, lazy } from 'react';
 import Layout from '@/components/Layout';
-import TuneList from '@/pages/TuneList';
-import TuneDetail from '@/pages/TuneDetail';
-import Practice from '@/pages/Practice';
+import { TuneProvider } from '@/context/TuneContext';
+import LoadingSpinner from '@/components/LoadingSpinner';
+
+// Lazy load page components
+const TuneList = lazy(() => import('@/pages/TuneList'));
+const TuneDetail = lazy(() => import('@/pages/TuneDetail'));
+const Practice = lazy(() => import('@/pages/Practice'));
 
 const theme = createTheme({
   palette: {
@@ -25,15 +30,19 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Router>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<TuneList />} />
-            <Route path="/tune/:id" element={<TuneDetail />} />
-            <Route path="/practice" element={<Practice />} />
-          </Routes>
-        </Layout>
-      </Router>
+      <TuneProvider>
+        <Router>
+          <Layout>
+            <Suspense fallback={<LoadingSpinner />}>
+              <Routes>
+                <Route path="/" element={<TuneList />} />
+                <Route path="/tune/:id" element={<TuneDetail />} />
+                <Route path="/practice" element={<Practice />} />
+              </Routes>
+            </Suspense>
+          </Layout>
+        </Router>
+      </TuneProvider>
     </ThemeProvider>
   );
 }

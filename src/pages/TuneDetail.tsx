@@ -13,8 +13,10 @@ import {
   DialogContent,
   DialogActions,
   Grid,
+  ToggleButton,
+  ToggleButtonGroup,
 } from '@mui/material';
-import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { Edit as EditIcon, Delete as DeleteIcon, MusicNote as MusicNoteIcon, Code as CodeIcon } from '@mui/icons-material';
 import { Tune, PracticeSession } from '@/types/tune';
 import { getTunes, saveTunes } from '@/utils/storage';
 import { getPracticeSessions } from '@/utils/storage';
@@ -28,13 +30,12 @@ export default function TuneDetail() {
   const [practiceSessions, setPracticeSessions] = useState<PracticeSession[]>([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [editingTune, setEditingTune] = useState<Tune | null>(null);
+  const [viewMode, setViewMode] = useState<'rendered' | 'raw'>('rendered');
 
   useEffect(() => {
     const loadedTunes = getTunes();
-    console.log('Loaded tunes:', loadedTunes);
     const loadedSessions = getPracticeSessions();
     const foundTune = loadedTunes.find((t) => t.id === id);
-    console.log('Found tune:', foundTune);
     if (foundTune) {
       setTune(foundTune);
     } else {
@@ -44,16 +45,15 @@ export default function TuneDetail() {
   }, [id, navigate]);
 
   useEffect(() => {
-    if (tune) {
+    if (tune && viewMode === 'rendered') {
       abcjs.renderAbc('abcjs-container', tune.abc, {
         responsive: 'resize',
       });
     }
-  }, [tune]);
+  }, [tune, viewMode]);
 
   const handleEditTune = () => {
     if (tune) {
-      console.log('Starting edit of tune:', tune);
       setEditingTune({ ...tune });
       setOpenDialog(true);
     }
@@ -62,27 +62,15 @@ export default function TuneDetail() {
   const handleSaveTune = () => {
     if (!tune || !editingTune) return;
 
-    console.log('Saving tune changes:', {
-      original: tune,
-      edited: editingTune
-    });
-
     const allTunes = getTunes();
-    console.log('Current tunes in storage:', allTunes);
-
     const updatedTunes = allTunes.map((t) =>
       t.id === tune.id ? editingTune : t
     );
-    console.log('Updated tunes array:', updatedTunes);
 
     saveTunes(updatedTunes);
     setTune(editingTune);
     setOpenDialog(false);
     setEditingTune(null);
-
-    // Verify the save
-    const savedTunes = getTunes();
-    console.log('Tunes after save:', savedTunes);
   };
 
   const handleDeleteTune = () => {
@@ -107,13 +95,30 @@ export default function TuneDetail() {
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
         <Typography variant="h4">{tune.title}</Typography>
-        <Button
-          variant="outlined"
-          startIcon={<EditIcon />}
-          onClick={handleEditTune}
-        >
-          Edit Tune
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <ToggleButtonGroup
+            value={viewMode}
+            exclusive
+            onChange={(_, newMode) => newMode && setViewMode(newMode)}
+            size="small"
+          >
+            <ToggleButton value="rendered">
+              <MusicNoteIcon sx={{ mr: 1 }} />
+              Rendered
+            </ToggleButton>
+            <ToggleButton value="raw">
+              <CodeIcon sx={{ mr: 1 }} />
+              Raw ABC
+            </ToggleButton>
+          </ToggleButtonGroup>
+          <Button
+            variant="outlined"
+            startIcon={<EditIcon />}
+            onClick={handleEditTune}
+          >
+            Edit Tune
+          </Button>
+        </Box>
       </Box>
 
       <Grid container spacing={3}>
@@ -141,7 +146,24 @@ export default function TuneDetail() {
                   Next review: {new Date(tune.nextReview).toLocaleDateString()}
                 </Typography>
               )}
-              <div id="abcjs-container" />
+              {viewMode === 'rendered' ? (
+                <div id="abcjs-container" />
+              ) : (
+                <Box
+                  sx={{
+                    mt: 2,
+                    p: 2,
+                    bgcolor: 'grey.100',
+                    borderRadius: 1,
+                    fontFamily: 'monospace',
+                    whiteSpace: 'pre-wrap',
+                    maxHeight: '500px',
+                    overflow: 'auto',
+                  }}
+                >
+                  {tune.abc}
+                </Box>
+              )}
             </CardContent>
           </Card>
         </Grid>

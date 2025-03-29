@@ -1,10 +1,9 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   AppBar,
   Box,
   Button,
-  CssBaseline,
   Drawer,
   IconButton,
   List,
@@ -20,10 +19,11 @@ import {
   PlayArrow as PlayArrowIcon,
   LibraryMusic as LibraryMusicIcon,
   Download as DownloadIcon,
+  Upload as UploadIcon,
 } from '@mui/icons-material';
-import { useState } from 'react';
-import { getTunes } from '@/utils/storage';
 import { exportTunebook } from '@/utils/abcUtils';
+import { useTuneContext } from '@/context/TuneContext';
+import ImportDialog from './ImportDialog';
 
 const drawerWidth = 240;
 
@@ -33,15 +33,16 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
   const navigate = useNavigate();
+  const { state } = useTuneContext();
 
-  const handleDrawerToggle = () => {
+  const handleDrawerToggle = useCallback(() => {
     setMobileOpen(!mobileOpen);
-  };
+  }, [mobileOpen]);
 
-  const handleExportTunebook = () => {
-    const tunes = getTunes();
-    const abcContent = exportTunebook(tunes);
+  const handleExportTunebook = useCallback(() => {
+    const abcContent = exportTunebook(state.tunes);
     const blob = new Blob([abcContent], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -51,7 +52,7 @@ export default function Layout({ children }: LayoutProps) {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  };
+  }, [state.tunes]);
 
   const menuItems = [
     { text: 'My Tunes', icon: <LibraryMusicIcon />, path: '/' },
@@ -77,7 +78,7 @@ export default function Layout({ children }: LayoutProps) {
         ))}
       </List>
       <Divider sx={{ mt: 2, mb: 2 }} />
-      <Box sx={{ px: 2 }}>
+      <Box sx={{ px: 2, display: 'flex', gap: 1, flexDirection: 'column' }}>
         <Button
           variant="outlined"
           startIcon={<DownloadIcon />}
@@ -86,19 +87,26 @@ export default function Layout({ children }: LayoutProps) {
         >
           Export Tunebook
         </Button>
+        <Button
+          variant="outlined"
+          startIcon={<UploadIcon />}
+          onClick={() => setImportDialogOpen(true)}
+          fullWidth
+        >
+          Import Tunes
+        </Button>
       </Box>
     </div>
   );
 
   return (
     <Box sx={{ display: 'flex' }}>
-      <CssBaseline />
       <AppBar
         position="fixed"
         sx={{
           width: { sm: `calc(100% - ${drawerWidth}px)` },
           ml: { sm: `${drawerWidth}px` },
-          bgcolor: '#2e7d32', // Match the green theme
+          bgcolor: '#2e7d32',
         }}
       >
         <Toolbar>
@@ -125,7 +133,7 @@ export default function Layout({ children }: LayoutProps) {
           open={mobileOpen}
           onClose={handleDrawerToggle}
           ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
+            keepMounted: true,
           }}
           sx={{
             display: { xs: 'block', sm: 'none' },
@@ -167,6 +175,11 @@ export default function Layout({ children }: LayoutProps) {
         <Toolbar />
         {children}
       </Box>
+
+      <ImportDialog
+        open={importDialogOpen}
+        onClose={() => setImportDialogOpen(false)}
+      />
     </Box>
   );
 } 

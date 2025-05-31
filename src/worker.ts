@@ -5,14 +5,16 @@ export default {
     try {
       const url = new URL(request.url);
       
-      // Serve static assets from the dist directory
-      if (url.pathname.startsWith('/assets/')) {
-        return env.ASSETS.fetch(request);
+      // Try to serve the requested file
+      const response = await env.ASSETS.fetch(request);
+      
+      // If the file exists, return it
+      if (response.status === 200) {
+        return response;
       }
 
-      // For all other routes, serve index.html
-      const indexRequest = new Request(`${url.origin}/index.html`, request);
-      return env.ASSETS.fetch(indexRequest);
+      // If the file doesn't exist, serve index.html
+      return env.ASSETS.fetch(new Request(`${url.origin}/index.html`, request));
     } catch (error) {
       // Log the error and return a 500 response
       console.error('Worker error:', error);

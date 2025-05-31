@@ -7,4 +7,7 @@ bucket = "./dist"
 include = ["dist/**/*"]
 
 [build]
-command = "npm run build" 
+command = "npm run build"
+
+[env.production]
+vars = { ENVIRONMENT = "production" } 

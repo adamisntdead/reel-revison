@@ -4,6 +4,7 @@ main = "src/worker.ts"
 
 [site]
 bucket = "./dist"
+include = ["dist/**/*"]
 
 [build]
 command = "npm run build" 

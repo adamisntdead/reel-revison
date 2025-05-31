@@ -1,0 +1,9 @@
+name = "reel-revision"
+compatibility_date = "2025-05-31"
+main = "src/worker.ts"
+
+[site]
+bucket = "./dist"
+
+[build]
+command = "npm run build" 
